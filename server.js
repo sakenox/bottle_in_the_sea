@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { Message, Report, SeriousReport } = require('./models');
 const path = require('path');
 
+
 const app = express();
 app.use(express.json());
 
@@ -13,6 +14,16 @@ const uri = "mongodb+srv://jotaro:Change.m3@bottleinthesea.xcebefl.mongodb.net/?
 mongoose.connect(uri)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB', err));
+
+
+app.use((req, res, next) => {
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  console.log(`Incoming request from IP: ${ip}`);
+  req.ipAddress = ip; // Add the IP address to the request object
+  next();
+});
+
+
 
 // Serve index.html at the root URL
 app.get('/', (req, res) => {
@@ -30,7 +41,8 @@ app.get('/open-bottle', (req, res) => {
 });
 
 app.post('/create-note', async (req, res) => {
-  const { content, ip_created } = req.body;
+  const { content } = req.body;
+  const ip_created = req.ipAddress;
   const message_id = await Message.countDocuments() + 1;
 
   const newMessage = new Message({
@@ -43,6 +55,7 @@ app.post('/create-note', async (req, res) => {
   await newMessage.save();
   res.status(201).send("Message created successfully!");
 });
+
 
 app.get('/api/open-bottle', async (req, res) => {
   console.log("Received request to open a bottle.");

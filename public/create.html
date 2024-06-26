@@ -9,7 +9,7 @@
 <body>
     <h1>Create a Note</h1>
     <form id="create-note-form">
-        <textarea id="content" placeholder="Write your message here..."></textarea>
+        <textarea id="content" placeholder="Write your message here..." maxlength="512"></textarea>
         <input type="hidden" id="ip_created" value="your_ip_address"> <!-- Replace with actual IP logic if needed -->
         <button type="submit">Create Note</button>
     </form>
@@ -19,16 +19,23 @@
         document.getElementById('create-note-form').addEventListener('submit', async function (e) {
             e.preventDefault();
             const content = document.getElementById('content').value;
-            const ip_created = document.getElementById('ip_created').value;
             const responseMessage = document.getElementById('message');
             responseMessage.style.display = 'block';
+
+            // Check the length of the content
+            if (content.length > 512) {
+                responseMessage.className = 'message error';
+                responseMessage.innerText = 'The message exceeds the maximum length of 512 characters.';
+                return;
+            }
+
             try {
                 const response = await fetch('/create-note', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ content, ip_created })
+                    body: JSON.stringify({ content })
                 });
                 const result = await response.text();
                 responseMessage.className = 'message success';
