@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create a Bottle</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Create a Note</h1>
+    <form id="create-note-form">
+        <textarea id="content" placeholder="Write your message here..."></textarea>
+        <input type="hidden" id="ip_created" value="your_ip_address"> <!-- Replace with actual IP logic if needed -->
+        <button type="submit">Create Note</button>
+    </form>
+    <div id="message" class="message" style="display: none;"></div>
+    <a href="/">Home</a>
+    <script>
+        document.getElementById('create-note-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const content = document.getElementById('content').value;
+            const ip_created = document.getElementById('ip_created').value;
+            const responseMessage = document.getElementById('message');
+            responseMessage.style.display = 'block';
+            try {
+                const response = await fetch('/create-note', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content, ip_created })
+                });
+                const result = await response.text();
+                responseMessage.className = 'message success';
+                responseMessage.innerText = result;
+            } catch (error) {
+                responseMessage.className = 'message error';
+                responseMessage.innerText = 'An error occurred while creating the note.';
+            }
+        });
+    </script>
+</body>
+</html>

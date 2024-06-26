@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open a Bottle</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Open a Note</h1>
+    <button id="open-bottle-btn">Open a Bottle</button>
+    <div id="message" class="message" style="display: none;"></div>
+    <button id="report-btn">Report</button>
+    <a href="/">Home</a>
+    <script>
+        document.getElementById('open-bottle-btn').addEventListener('click', async function () {
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.display = 'block';
+            messageDiv.innerHTML = "Loading...";
+            try {
+                const response = await fetch('/api/open-bottle');
+                if (response.ok) {
+                    const message = await response.json();
+                    messageDiv.className = 'message success';
+                    messageDiv.innerText = message.content;
+                    const reportBtn = document.getElementById('report-btn');
+                    reportBtn.style.display = 'inline';
+                    reportBtn.onclick = async () => {
+                        await fetch('/report', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ message_id: message.message_id })
+                        });
+                        alert('Report submitted');
+                    };
+                } else {
+                    const errorMessage = await response.text();
+                    messageDiv.className = 'message error';
+                    messageDiv.innerText = errorMessage;
+                }
+            } catch (error) {
+                console.error("Error opening bottle:", error);
+                messageDiv.className = 'message error';
+                messageDiv.innerText = "An error occurred while opening the bottle.";
+            }
+        });
+    </script>
+</body>
+</html>
