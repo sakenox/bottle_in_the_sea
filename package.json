@@ -1,0 +1,13 @@
+{
+  "name": "bottle_shit",
+  "version": "1.0.0",
+  "description": "\"# bottle_in_the_sea\"",
+  "main": "initDB.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
