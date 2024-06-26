@@ -48,7 +48,9 @@ textarea {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    overflow-wrap: break-word;
     background-color: #e9ecef;
+    inline-size: 400px;
 }
 
 .message.success {
