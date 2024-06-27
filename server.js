@@ -43,6 +43,11 @@ app.get('/open-bottle', (req, res) => {
 app.post('/create-note', async (req, res) => {
   const { content } = req.body;
   const ip_created = req.ipAddress;
+  
+  if (content.length > 512) {
+    return res.status(400).send("Message is too long. Please limit to 512 characters.");
+  }
+
   const message_id = await Message.countDocuments() + 1;
 
   const newMessage = new Message({
