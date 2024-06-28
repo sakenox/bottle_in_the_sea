@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message</title>
+    <link rel="stylesheet" href="/styles2.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Message in a Bottle</h1>
+        <div id="message-container" class="message-box">
+            <p id="message-content" class="message-content"></p>
+            <button id="report-btn" class="button">Report</button>
+        </div>
+        <div id="message" class="message" style="display: none;"></div>
+        <a href="/" class="btn btn-primary link">Home</a>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const pathArray = window.location.pathname.split('/');
+            const unique_id = pathArray[pathArray.length - 1];
+            const responseMessage = document.getElementById('message');
+            let id;
+            responseMessage.style.display = 'block';
+            try {
+                const response = await fetch(`/api/message/${unique_id}`);
+                if (response.ok) {
+                    const message = await response.json();
+                    id = message.message_id;
+                    document.getElementById('message-content').innerText = message.content;
+                } else {
+                    responseMessage.className = 'message error';
+                    responseMessage.innerText = 'Message not found.';
+                }
+            } catch (error) {
+                responseMessage.className = 'message error';
+                responseMessage.innerText = 'An error occurred while fetching the message.';
+            }
+
+            document.getElementById('report-btn').addEventListener('click', async function () {
+                try {
+                    console.log(message.message_id); // Check if this logs a valid ID
+                    const response = await fetch('/report', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message_id: id })
+                    });
+                    if (response.ok) {
+                        responseMessage.className = 'message success';
+                        responseMessage.innerText = 'Report submitted successfully.';
+                    } else {
+                        responseMessage.className = 'message error';
+                        responseMessage.innerText = 'Error submitting report.';
+                    }
+                } catch (error) {
+                    responseMessage.className = 'message error';
+                    responseMessage.innerText = 'An error occurred while submitting the report.';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

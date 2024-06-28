@@ -65,6 +65,26 @@ app.post('/create-note', async (req, res) => {
   res.status(201).send("Message created successfully!");
 });
 
+app.get('/api/message/:unique_id', async (req, res) => {
+  const { unique_id } = req.params;
+  try {
+    const message = await Message.findOne({ unique_id });
+    if (message) {
+      res.json(message);
+    } else {
+      res.status(404).send("Message not found.");
+    }
+  } catch (error) {
+    console.error('Error fetching message:', error);
+    res.status(500).send("Server error.");
+  }
+});
+
+
+app.get('/message/:unique_id', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'message.html'));
+});
+
 
 app.get('/api/open-bottle', async (req, res) => {
   console.log("Received request to open a bottle.");
@@ -84,7 +104,7 @@ app.get('/api/open-bottle', async (req, res) => {
     message.unique_id = generateUniqueId();
     await message.save();
     console.log("Message found and opened:", message);
-    res.json(message);
+    res.json({ unique_id: message.unique_id });
   } else {
     console.log("No unopened messages found after querying.");
     res.status(404).send("No unopened messages found.");
@@ -93,10 +113,16 @@ app.get('/api/open-bottle', async (req, res) => {
 
 app.post('/report', async (req, res) => {
   const { message_id } = req.body;
+
+  if (!message_id) {
+    return res.status(400).send('Message ID is required.');
+}
+
   const report = await Report.findOneAndUpdate({ message_id }, { $inc: { report_count: 1 } }, { new: true, upsert: true });
 
   if (report.report_count > 5) {
-    const seriousReport = new SeriousReport(report.toObject());
+
+    const seriousReport = await SeriousReport.findOneAndUpdate({ message_id }, { $inc: { report_count: 1 } }, { new: true, upsert: true });
     await seriousReport.save();
   }
   
