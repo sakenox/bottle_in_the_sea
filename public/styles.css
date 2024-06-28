@@ -1,6 +1,9 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f8ff;
+    background-image: url(images/2.webp);
+    background-position: 50%;
+    background-size: 100%;
     margin: 0;
     padding: 0;
     display: flex;
@@ -9,6 +12,15 @@ body {
     justify-content: center;
     height: 100vh;
     text-align: center;
+}
+
+.mt-5 {
+    color:#333;
+}
+.form-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 h1 {
@@ -44,13 +56,15 @@ textarea {
 }
 
 #message {
-    margin: 20px 0;
+    margin: 20px auto;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     overflow-wrap: break-word;
     background-color: #e9ecef;
     inline-size: 400px;
+    display: flex;
+    justify-content: center;
 }
 
 .message.success {
