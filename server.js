@@ -54,9 +54,9 @@ app.get('/create-note', (req, res) => {
 });
 
 // Serve open.html at /open-bottle
-app.get('/open-bottle', (req, res) => {
+/*app.get('/open-bottle', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'open.html'));
-});
+}); */
 
 // Apply the rateLimit middleware to the create-note endpoint
 app.post('/create-note', rateLimit, async (req, res) => {

@@ -9,19 +9,23 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="title">Message in a Bottle</h1>
-        <div id="message-container" class="message-box">
-            <p id="message-content" class="message-content"></p>
-            <button id="report-btn" class="button">Report</button>
+        <div class="prompt-box">
+            <h1 class="title">The hidden message🤫</h1>
+            <div id="message-container" class="message-box">
+                <p id="message-content" class="message-content"></p>
+                <button id="report-btn" class="button">Report</button>
+            </div>
+            <div id="response-message" class="response-message"></div>
+            <a href="/" class="btn btn-primary link">
+                <img id="fish-button"src="/images/fish.png" alt="Fish">
+            </a>
         </div>
-        <div id="message" class="message" style="display: none;"></div>
-        <a href="/" class="btn btn-primary link">Home</a>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             const pathArray = window.location.pathname.split('/');
             const unique_id = pathArray[pathArray.length - 1];
-            const responseMessage = document.getElementById('message');
+            const responseMessage = document.getElementById('response-message');
             let id;
             responseMessage.style.display = 'block';
             try {
@@ -29,19 +33,21 @@
                 if (response.ok) {
                     const message = await response.json();
                     id = message.message_id;
-                    document.getElementById('message-content').innerText = message.content;
+                    const messageContent = document.getElementById('message-content');
+                    messageContent.innerText = message.content;
+                    
+                    // Adjust container width based on message content
+                    const container = document.querySelector('.container');
+                    container.style.width = Math.min(Math.max(messageContent.offsetWidth + 40, 300), 600) + 'px';
                 } else {
-                    responseMessage.className = 'message error';
-                    responseMessage.innerText = 'Message not found.';
+                    showResponseMessage('Message not found.', 'error');
                 }
             } catch (error) {
-                responseMessage.className = 'message error';
-                responseMessage.innerText = 'An error occurred while fetching the message.';
+                showResponseMessage('An error occurred while fetching the message.', 'error');
             }
 
             document.getElementById('report-btn').addEventListener('click', async function () {
                 try {
-                    console.log(message.message_id); // Check if this logs a valid ID
                     const response = await fetch('/report', {
                         method: 'POST',
                         headers: {
@@ -50,18 +56,25 @@
                         body: JSON.stringify({ message_id: id })
                     });
                     if (response.ok) {
-                        responseMessage.className = 'message success';
-                        responseMessage.innerText = 'Report submitted successfully.';
+                        showResponseMessage('Report submitted successfully.', 'success');
                     } else {
-                        responseMessage.className = 'message error';
-                        responseMessage.innerText = 'Error submitting report.';
+                        showResponseMessage('Error submitting report.', 'error');
                     }
                 } catch (error) {
-                    responseMessage.className = 'message error';
-                    responseMessage.innerText = 'An error occurred while submitting the report.';
+                    showResponseMessage('An error occurred while submitting the report.', 'error');
                 }
             });
         });
+
+        function showResponseMessage(message, type) {
+            const responseMessage = document.getElementById('response-message');
+            responseMessage.className = `response-message ${type}`;
+            responseMessage.innerText = message;
+            responseMessage.style.display = 'block';
+            setTimeout(() => {
+                responseMessage.style.display = 'none';
+            }, 3000);
+        }
     </script>
 </body>
 </html>

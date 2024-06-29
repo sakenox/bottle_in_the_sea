@@ -8,11 +8,34 @@
 </head>
 <body>
     <div class="container">
-        <h1>Message in a Bottle</h1>
+        <h1>💬Message in a Bottle🥂</h1>
         <div class="options">
-            <a href="create.html" class="btn">Create a Bottle</a>
-            <a href="open.html" class="btn">Open a Bottle</a>
+            <a id="create-button" href="create.html" class="btn">Create a Bottle</a>
+            <button id="open-bottle-btn" class="btn">Open a Bottle</button>
+            <div id="message" class="message" style="display: none;"></div>
         </div>
     </div>
+    <script>
+        document.getElementById('open-bottle-btn').addEventListener('click', async function () {
+            const responseMessage = document.getElementById('message');
+            responseMessage.style.display = 'block';
+            try {
+                const response = await fetch('/api/open-bottle');
+                if (response.ok) {
+                    const { unique_id } = await response.json();
+                    window.location.href = `/message/${unique_id}`;
+                } else {
+                    responseMessage.className = 'message error';
+                    responseMessage.innerText = 'No unopened messages found.';
+                }
+            } catch (error) {
+                responseMessage.className = 'message error';
+                responseMessage.innerText = 'An error occurred while opening the bottle.';
+            }
+            setTimeout(() => {
+                responseMessage.style.display = 'none';
+            }, 3000);
+        });
+    </script>
 </body>
 </html>
