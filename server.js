@@ -15,6 +15,24 @@ mongoose.connect(uri)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB', err));
 
+  let ipTimestamps = {};
+
+// Middleware to check rate limit
+function rateLimit(req, res, next) {
+  const ip = req.ipAddress;
+  const currentTime = Date.now();
+  const timeLimit = 60 * 1000; // 60 seconds in milliseconds
+
+  if (ipTimestamps[ip] && (currentTime - ipTimestamps[ip] < timeLimit)) {
+    const waitTime = (timeLimit - (currentTime - ipTimestamps[ip])) / 1000;
+    return res.status(429).send(`You can create a new message in ${waitTime.toFixed(1)} seconds.`);
+  }
+
+  // Update the timestamp for this IP
+  ipTimestamps[ip] = currentTime;
+  next();
+}
+
 
 app.use((req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -40,7 +58,8 @@ app.get('/open-bottle', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'open.html'));
 });
 
-app.post('/create-note', async (req, res) => {
+// Apply the rateLimit middleware to the create-note endpoint
+app.post('/create-note', rateLimit, async (req, res) => {
   const { content } = req.body;
   const ip_created = req.ipAddress;
 
@@ -50,6 +69,11 @@ app.post('/create-note', async (req, res) => {
   
   if (content.length > 512) {
     return res.status(400).send("Message is too long. Please limit to 512 characters.");
+  }
+
+  const isBanned = await SeriousReport.findOne({ ip_created });
+  if (isBanned) {
+    return res.status(403).send("You have been banned from making bottles. Email us at appeal@url.com to appeal.");
   }
 
   const message_id = await Message.countDocuments() + 1;
@@ -68,8 +92,17 @@ app.post('/create-note', async (req, res) => {
 app.get('/api/message/:unique_id', async (req, res) => {
   const { unique_id } = req.params;
   try {
-    const message = await Message.findOne({ unique_id });
+    let message = await Message.findOne({ unique_id });
     if (message) {
+      const now = new Date();
+      const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+
+      if (!message.opened_at || message.opened_at < tenMinutesAgo) {
+        message.unique_id = generateUniqueId();
+        message.opened_at = now;
+      }
+      message.opened = true;
+      await message.save();
       res.json(message);
     } else {
       res.status(404).send("Message not found.");
@@ -98,13 +131,20 @@ app.get('/api/open-bottle', async (req, res) => {
   const random = Math.floor(Math.random() * count);
   console.log(`Random index generated: ${random}`);
   const message = await Message.findOne({ opened: false }).skip(random);
-  
+
   if (message) {
+    const now = new Date();
+    const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+
+    if (!message.opened_at || message.opened_at < tenMinutesAgo) {
+      message.unique_id = generateUniqueId();
+      message.opened_at = now;
+    }
+
     message.opened = true;
-    message.unique_id = generateUniqueId();
     await message.save();
     console.log("Message found and opened:", message);
-    res.json({ unique_id: message.unique_id });
+    res.json(message);
   } else {
     console.log("No unopened messages found after querying.");
     res.status(404).send("No unopened messages found.");
@@ -113,19 +153,52 @@ app.get('/api/open-bottle', async (req, res) => {
 
 app.post('/report', async (req, res) => {
   const { message_id } = req.body;
+  const ip_created = req.ipAddress; // Get the IP address from the request
 
   if (!message_id) {
     return res.status(400).send('Message ID is required.');
-}
-
-  const report = await Report.findOneAndUpdate({ message_id }, { $inc: { report_count: 1 } }, { new: true, upsert: true });
-
-  if (report.report_count > 5) {
-
-    const seriousReport = await SeriousReport.findOneAndUpdate({ message_id }, { $inc: { report_count: 1 } }, { new: true, upsert: true });
-    await seriousReport.save();
   }
-  
+
+  // Find the report document for the given message_id
+  const report = await Report.findOne({ message_id });
+
+  if (report) {
+    // Check if the IP address has already reported this message
+    if (report.reported_by_ips.includes(ip_created)) {
+      return res.status(400).send('You have already reported this message.');
+    }
+
+    // Add the IP address to the reported_by_ips array and increment the report count
+    report.reported_by_ips.push(ip_created);
+    report.report_count += 1;
+    await report.save();
+  } else {
+    // If no report document exists, create a new one
+    const newReport = new Report({
+      message_id,
+      report_count: 1,
+      reported_by_ips: [ip_created]
+    });
+    await newReport.save();
+  }
+
+  // Check if the report count exceeds the threshold for a serious report
+  if (report && report.report_count > 10) {
+    // Find the original message to get the ip_created
+    const message = await Message.findOne({ message_id });
+    if (message) {
+      const seriousReport = await SeriousReport.findOneAndUpdate(
+        { message_id },
+        { 
+          $inc: { report_count: 1 },
+          $set: { ip_created: message.ip_created } // Set the ip_created field
+        },
+        { new: true, upsert: true }
+      );
+      await seriousReport.save();
+    }
+  }
+
   res.status(200).send("Report recorded successfully!");
 });
 
