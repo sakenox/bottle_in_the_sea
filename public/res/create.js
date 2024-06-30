@@ -48,6 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => {
       responseMessage.style.display = 'none';
-    }, 5000);
+    }, 3000);
   }
 });
