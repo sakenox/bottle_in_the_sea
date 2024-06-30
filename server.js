@@ -1,3 +1,6 @@
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
 const express = require('express');
 const mongoose = require('mongoose');
 const { Message, Report, SeriousReport } = require('./models');
@@ -9,6 +12,12 @@ app.use(express.json());
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+const options = {
+  key: fs.readFileSync('ca/private.key'),
+  cert: fs.readFileSync('ca/certificate.crt')
+};
+
 
 const uri = "mongodb+srv://jotaro:Change.m3@bottleinthesea.xcebefl.mongodb.net/?retryWrites=true&w=majority&appName=bottleInTheSea";
 mongoose.connect(uri)
@@ -220,7 +229,12 @@ function generateUniqueId() {
   return Math.random().toString(36).substr(2, 9);
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+https.createServer(options, app).listen(443, () => {
+  console.log('HTTPS Server running on port 443');
 });
+
+// Redirect HTTP to HTTPS
+http.createServer((req, res) => {
+  res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+  res.end();
+}).listen(80);
