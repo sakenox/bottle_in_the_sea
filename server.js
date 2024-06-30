@@ -87,7 +87,7 @@ app.post('/create-note', rateLimit, async (req, res) => {
 
   const isBanned = await SeriousReport.findOne({ ip_created });
   if (isBanned) {
-    return res.status(403).send("You have been banned from making bottles. Email us at appeal@url.com to appeal.");
+    return res.status(403).send("You have been banned from making bottles. Email us at appeal@seanotes.se to appeal.");
   }
 
   const message_id = await Message.countDocuments() + 1;
