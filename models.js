@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const messageSchema = new mongoose.Schema({
   message_id: { type: Number, required: true, unique: true },
-  content: { type: String, required: true, maxlength: 512 },
+  content: { type: String, required: true, maxlength: 1000 },
   created_at: { type: Date, default: Date.now },
   opened: { type: Boolean, default: false },
   unique_id: { type: String, required: true, unique: true },
@@ -19,7 +19,7 @@ const reportSchema = new mongoose.Schema({
 
 const seriousReportSchema = new Schema({
   message_id: { type: Number, required: true },
-  report_count: { type: Number, required: true },
+  report_count: { type: Number, default: 10 },
   ip_created: { type: String, required: true }
 });
 

@@ -23,14 +23,28 @@ function rateLimit(req, res, next) {
   const currentTime = Date.now();
   const timeLimit = 60 * 1000; // 60 seconds in milliseconds
 
-  if (ipTimestamps[ip] && (currentTime - ipTimestamps[ip] < timeLimit)) {
-    const waitTime = (timeLimit - (currentTime - ipTimestamps[ip])) / 1000;
-    return res.status(429).send(`You can create a new message in ${waitTime.toFixed(1)} seconds.`);
-  }
+  SeriousReport.findOne({ ip_created: ip })
+    .then(isBanned => {
+      if (isBanned) {
+        // If IP is banned, skip rate limiting and proceed to next middleware
+        return next();
+      }
 
-  // Update the timestamp for this IP
-  ipTimestamps[ip] = currentTime;
-  next();
+      // If IP is not banned, proceed with rate limiting logic
+      if (ipTimestamps[ip] && (currentTime - ipTimestamps[ip] < timeLimit)) {
+        const waitTime = (timeLimit - (currentTime - ipTimestamps[ip])) / 1000;
+        return res.status(429).send(`You can create a new message in ${waitTime.toFixed(1)} seconds.`);
+      }
+
+      // Update the timestamp for this IP
+      ipTimestamps[ip] = currentTime;
+      next();
+    })
+    .catch(err => {
+      console.error('Error checking ban status:', err);
+      next(); // Proceed anyway if there's an error
+    });
+
 }
 
 
