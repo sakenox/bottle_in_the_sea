@@ -56,6 +56,17 @@ function rateLimit(req, res, next) {
 
 }
 
+// Middleware to redirect from IP to domain name
+app.use((req, res, next) => {
+  const host = req.headers.host;
+  const domainName = 'seanotes.se'; // Your domain name
+  const serverIp = '164.92.167.248'; // Your server IP address
+  if (host === serverIp) {
+    return res.redirect(301, `https://${domainName}${req.url}`);
+  }
+  next();
+});
+
 
 app.use((req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
