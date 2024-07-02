@@ -5,6 +5,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { Message, Report, SeriousReport } = require('./models');
 const path = require('path');
+const Filter = require('bad-words');  // Import the bad-words library
+
 
 
 const app = express();
@@ -25,12 +27,14 @@ mongoose.connect(uri)
   .catch(err => console.error('Error connecting to MongoDB', err));
 
   let ipTimestamps = {};
+  const profanityTimestamps = {};
+  const filter = new Filter();
 
 // Middleware to check rate limit
 function rateLimit(req, res, next) {
   const ip = req.ipAddress;
   const currentTime = Date.now();
-  const timeLimit = 60 * 1000; // 60 seconds in milliseconds
+  const timeLimit = profanityTimestamps[ip] ? 20 * 1000 : 60 * 1000; // 20 seconds if profanity, else 60 seconds
 
   SeriousReport.findOne({ ip_created: ip })
     .then(isBanned => {
@@ -108,6 +112,15 @@ app.post('/create-note', rateLimit, async (req, res) => {
   if (content.length > 1000) {
     return res.status(400).send("Message is too long. Please limit to 1000 characters.");
   }
+
+  if (filter.isProfane(content)) {
+    profanityTimestamps[ip_created] = Date.now();
+    return res.status(400).send("Your message contains inappropriate language.");
+  } else {
+    delete profanityTimestamps[ip_created];
+  }
+
+  
 
   const isBanned = await SeriousReport.findOne({ ip_created });
   if (isBanned) {
