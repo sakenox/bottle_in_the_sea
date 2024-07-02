@@ -87,10 +87,14 @@ app.get('/create-note', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'create.html'));
 });
 
-// Serve open.html at /open-bottle
-/*app.get('/open-bottle', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'open.html'));
-}); */
+app.get('/terms', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/legal', 'terms.html'));
+});
+
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/legal', 'privacy.html'));
+}); 
+
 
 // Apply the rateLimit middleware to the create-note endpoint
 app.post('/create-note', rateLimit, async (req, res) => {
@@ -101,8 +105,8 @@ app.post('/create-note', rateLimit, async (req, res) => {
     return res.status(400).send('Content is required.');
   }
   
-  if (content.length > 512) {
-    return res.status(400).send("Message is too long. Please limit to 512 characters.");
+  if (content.length > 1000) {
+    return res.status(400).send("Message is too long. Please limit to 1000 characters.");
   }
 
   const isBanned = await SeriousReport.findOne({ ip_created });
