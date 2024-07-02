@@ -18,7 +18,7 @@ body {
     margin: auto 0;
 }
 .mt-5 {
-    color:#333;
+    color: #333;
 }
 .form-group {
     display: flex;
@@ -125,14 +125,14 @@ textarea {
 
 .footer {
     text-align: center;
-    background-color: #007bff;
+    background-color: #0056b3;
     color: #ffffff;
     width: 100%;
     position: absolute;
     bottom: 0;
     left: 0;
     font-size: 14px;
-    padding: 8px 0;
+    padding: 20px 0;
     opacity: 0.9; /* Increased opacity for better visibility */
 }
 
@@ -157,10 +157,6 @@ textarea {
     margin-bottom: 10px;
 }
 
-.logo img {
-    max-height: 50px;
-}
-
 .footer-links {
     margin-top: 10px;
 }
@@ -169,9 +165,87 @@ textarea {
     color: #ffffff;
     text-decoration: none;
     margin: 0 10px;
-    font-size: 14px;
 }
 
 .footer-link:hover {
     text-decoration: underline;
+}
+
+.bottle-container {
+    position: absolute;
+    bottom: 20px;
+    left: 120px; /* Adjust as necessary to position the bottle */
+    display: flex;
+    align-items: flex-end;
+    height: 100px;
+}
+
+.bottle {
+    width: 50px;
+}
+
+.bubbles {
+    position: absolute;
+    bottom: 50px;
+    left: 40%; /* Center horizontally */
+    transform: translateX(-50%); /* Offset by 50% of its own width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: bubbleAnimation 5s infinite;
+}
+
+.bubble {
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    margin-bottom: 5px;
+    animation: bubbleRise 3s infinite;
+}
+
+.bubble:nth-child(2) {
+    width: 12px;
+    height: 12px;
+    animation-duration: 4s;
+}
+
+.bubble:nth-child(3) {
+    width: 8px;
+    height: 8px;
+    animation-duration: 3.5s;
+}
+
+@keyframes bubbleRise {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+}
+
+@keyframes bubbleAnimation {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 600px) {
+    .footer {
+        padding: 10px;
+    }
+    .social-icons {
+        margin-bottom: 5px;
+    }
+    .social-icons a {
+        font-size: 18px;
+        margin: 0 10px;
+    }
 }
