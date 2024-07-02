@@ -236,16 +236,8 @@ textarea {
     }
 }
 
-/* Mobile styles */
 @media (max-width: 600px) {
-    .footer {
-        padding: 10px;
-    }
-    .social-icons {
-        margin-bottom: 5px;
-    }
-    .social-icons a {
-        font-size: 18px;
-        margin: 0 10px;
+    .bottle-container {
+        display: none;
     }
 }
