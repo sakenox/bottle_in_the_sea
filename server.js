@@ -159,16 +159,18 @@ app.get('/message/:unique_id', (req, res) => {
 
 app.get('/api/open-bottle', async (req, res) => {
   console.log("Received request to open a bottle.");
-  const count = await Message.countDocuments({ opened: false });
+  const count = await Message.countDocuments();
+  /*const count = await Message.countDocuments({ opened: false });
   console.log(`Count of unopened messages: ${count}`);
   if (count === 0) {
     console.log("No unopened messages found.");
     return res.status(404).send("No unopened messages found.");
   }
-
+ */
   const random = Math.floor(Math.random() * count);
   console.log(`Random index generated: ${random}`);
-  const message = await Message.findOne({ opened: false }).skip(random);
+  //const message = await Message.findOne({ opened: false }).skip(random);
+  const message = await Message.findOne().skip(random);
 
   if (message) {
     const now = new Date();
