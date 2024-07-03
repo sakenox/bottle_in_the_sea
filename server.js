@@ -165,7 +165,7 @@ app.post('/create-note', rateLimit, async (req, res) => {
   res.status(201).send("Message created successfully!");
 });
 
-app.get('/api/message/:unique_id', messageLimiter, async (req, res) => {
+app.get('/api/message/:unique_id', checkReferer, messageLimiter, async (req, res) => {
   const { unique_id } = req.params;
   try {
     let message = await Message.findOne({ unique_id });
