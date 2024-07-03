@@ -3,14 +3,14 @@ const http = require('http');
 const fs = require('fs');
 const express = require('express');
 const mongoose = require('mongoose');
-const { Message, Report, SeriousReport } = require('./models');
+const { Message, Report, SeriousReport} = require('./models');
 const path = require('path');
 const Filter = require('bad-words');  // Import the bad-words library
-
-
+const rateLimiter = require('express-rate-limit');
 
 const app = express();
 app.use(express.json());
+
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -26,9 +26,24 @@ mongoose.connect(uri)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Error connecting to MongoDB', err));
 
-  let ipTimestamps = {};
-  const profanityTimestamps = {};
-  const filter = new Filter();
+let ipTimestamps = {};
+const profanityTimestamps = {};
+const filter = new Filter();
+
+const openBottleLimiter = rateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 5 requests per `window` (here, per 1 minute)
+  message: 'Too many requests, please try again after a minute'
+});
+
+// Rate limiter for the message endpoint
+const messageLimiter = rateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 5 requests per `window` (here, per 1 minute)
+  message: 'Too many requests, please try again after a minute'
+});
+  
+
 
 // Middleware to check rate limit
 function rateLimit(req, res, next) {
@@ -79,6 +94,16 @@ app.use((req, res, next) => {
   next();
 });
 
+
+// Middleware to check referer
+function checkReferer(req, res, next) {
+  const referer = req.get('referer');
+  if (referer && referer.startsWith('https://seanotes.se')) {
+    next();
+  } else {
+    res.status(403).send('Forbidden');
+  }
+}
 
 
 // Serve index.html at the root URL
@@ -140,7 +165,7 @@ app.post('/create-note', rateLimit, async (req, res) => {
   res.status(201).send("Message created successfully!");
 });
 
-app.get('/api/message/:unique_id', async (req, res) => {
+app.get('/api/message/:unique_id', messageLimiter, async (req, res) => {
   const { unique_id } = req.params;
   try {
     let message = await Message.findOne({ unique_id });
@@ -154,7 +179,10 @@ app.get('/api/message/:unique_id', async (req, res) => {
       }
       message.opened = true;
       await message.save();
-      res.json(message);
+      res.json({ 
+        unique_id: message.unique_id, 
+        content: message.content 
+      });
     } else {
       res.status(404).send("Message not found.");
     }
@@ -170,7 +198,7 @@ app.get('/message/:unique_id', (req, res) => {
 });
 
 
-app.get('/api/open-bottle', async (req, res) => {
+app.get('/api/open-bottle', openBottleLimiter, checkReferer, async (req, res) => {
   console.log("Received request to open a bottle.");
   const count = await Message.countDocuments();
   /*const count = await Message.countDocuments({ opened: false });
@@ -196,8 +224,9 @@ app.get('/api/open-bottle', async (req, res) => {
 
     message.opened = true;
     await message.save();
-    console.log("Message found and opened:", message);
-    res.json(message);
+    res.json({
+      unique_id: message.unique_id
+    });
   } else {
     console.log("No unopened messages found after querying.");
     res.status(404).send("No unopened messages found.");
@@ -205,13 +234,14 @@ app.get('/api/open-bottle', async (req, res) => {
 });
 
 app.post('/report', async (req, res) => {
-  const { message_id } = req.body;
+  const { the_id } = req.body;
   const ip_created = req.ipAddress; // Get the IP address from the request
 
-  if (!message_id) {
+  if (!the_id) {
     return res.status(400).send('Message ID is required.');
   }
-
+  const actual = await Message.findOne({ the_id });
+  let message_id = actual.message_id;
   // Find the report document for the given message_id
   const report = await Report.findOne({ message_id });
 

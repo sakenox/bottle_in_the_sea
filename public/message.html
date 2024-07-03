@@ -63,7 +63,7 @@
                 const response = await fetch(`/api/message/${unique_id}`);
                 if (response.ok) {
                     const message = await response.json();
-                    id = message.message_id;
+                    id = message.unique_id;
                     const messageContent = document.getElementById('message-content');
                     messageContent.innerText = message.content;
                     
@@ -84,7 +84,7 @@
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ message_id: id })
+                        body: JSON.stringify({ the_id: id })
                     });
                     if (response.ok) {
                         showResponseMessage('Report submitted successfully.', 'success');
