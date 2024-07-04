@@ -7,7 +7,7 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://seanotes.se/create.html</loc>
+    <loc>https://seanotes.se/create-note</loc>
     <lastmod>2024-07-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -19,14 +19,38 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://seanotes.se/privacy.html</loc>
+    <loc>https://seanotes.se/privacy</loc>
     <lastmod>2024-07-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://seanotes.se/terms.html</loc>
+    <loc>https://seanotes.se/terms</loc>
     <lastmod>2024-07-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+    <url>
+    <loc>https://seanotes.se/faq</loc>
+    <lastmod>2024-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+    <url>
+    <loc>https://seanotes.se/contact</loc>
+    <lastmod>2024-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+    <url>
+    <loc>https://seanotes.se/about</loc>
+    <lastmod>2024-07-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+    <url>
+    <loc>https://seanotes.se/blog</loc>
+    <lastmod>2024-07-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
