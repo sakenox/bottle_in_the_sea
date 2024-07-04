@@ -7,6 +7,9 @@ const { Message, Report, SeriousReport} = require('./models');
 const path = require('path');
 const Filter = require('bad-words');  // Import the bad-words library
 const rateLimiter = require('express-rate-limit');
+const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
+
 
 const app = express();
 app.use(express.json());
@@ -33,6 +36,12 @@ const filter = new Filter();
 const openBottleLimiter = rateLimiter({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // Limit each IP to 5 requests per `window` (here, per 1 minute)
+  message: 'Too many requests, please try again after a minute'
+});
+
+const emailLimiter = rateLimiter({
+  windowMs: 60 * 1000, // 1 minute
+  max: 1, // Limit each IP to 5 requests per `window` (here, per 1 minute)
   message: 'Too many requests, please try again after a minute'
 });
 
@@ -123,6 +132,23 @@ app.get('/terms', (req, res) => {
 app.get('/privacy', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/legal', 'privacy.html'));
 }); 
+
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/info', 'about.html'));
+});
+
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/info', 'contact.html'));
+});
+
+app.get('/faq', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/info', 'faq.html'));
+});
+
+app.get('/blog', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/info', 'blog.html'));
+});
+
 
 
 // Apply the rateLimit middleware to the create-note endpoint
@@ -233,7 +259,7 @@ app.get('/api/open-bottle', openBottleLimiter, checkReferer, async (req, res) =>
   }
 });
 
-app.post('/report', async (req, res) => {
+app.post('/report', checkReferer, async (req, res) => {
   const { the_id } = req.body;
   const ip_created = req.ipAddress; // Get the IP address from the request
 
@@ -283,6 +309,38 @@ app.post('/report', async (req, res) => {
   }
 
   res.status(200).send("Report recorded successfully!");
+});
+
+app.post('/send-message', emailLimiter, async (req, res) => {
+  const { name, email, subject, message } = req.body;
+
+  if (!name || !email || !subject || !message) {
+    return res.status(400).send('All fields are required.');
+  }
+
+  // Configure the email transport using nodemailer
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'smolpixelstudio@gmail.com',
+      pass: 'zaqr wwno smhy bgpw'
+    }
+  });
+
+  const mailOptions = {
+    from: "send@seanotes.se",
+    to: 'support@seanotes.se',
+    subject: subject,
+    text: `Name: ${name}\nEmail: ${email}\n\n${message}`
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).send('Message sent successfully.');
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).send('Error sending email.');
+  }
 });
 
 function generateUniqueId() {
