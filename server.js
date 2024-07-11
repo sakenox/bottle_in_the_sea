@@ -12,7 +12,6 @@ const nodemailer = require('nodemailer');
 
 
 const app = express();
-app.set('trust proxy', true);
 app.use(express.json());
 
 
