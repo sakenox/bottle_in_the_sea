@@ -149,7 +149,22 @@ app.get('/blog', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/info', 'blog.html'));
 });
 
+// Middleware to log IP and redirect
+app.get('/redirect', (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
+  // Log the IP address
+  const logMessage = `${new Date().toISOString()} - ${ip}\n`;
+  fs.appendFile(path.join(__dirname, 'logs', 'ips.txt'), logMessage, (err) => {
+      if (err) {
+          console.error('Error writing to log file:', err);
+      }
+  });
+
+  // Redirect to a TikTok video
+  const tiktokUrl = 'https://www.tiktok.com/@lnozza123/video/7390509089987497248?is_from_webapp=1&sender_device=pc';
+  res.redirect(tiktokUrl);
+});
 
 // Apply the rateLimit middleware to the create-note endpoint
 app.post('/create-note', rateLimit, async (req, res) => {
