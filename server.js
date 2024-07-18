@@ -193,7 +193,7 @@ app.post('/create-note', rateLimit, async (req, res) => {
     return res.status(403).send("You have been banned from making bottles. Email us at appeal@seanotes.se to appeal.");
   }
 
-  const message_id = await Message.countDocuments() + 1;
+  let message_id = await Message.countDocuments() + 1;
   let uniqueMessageId = false;
 
   while (!uniqueMessageId) {
