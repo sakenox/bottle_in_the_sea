@@ -194,6 +194,16 @@ app.post('/create-note', rateLimit, async (req, res) => {
   }
 
   const message_id = await Message.countDocuments() + 1;
+  let uniqueMessageId = false;
+
+  while (!uniqueMessageId) {
+    const existingMessage = await Message.findOne({ message_id });
+    if (!existingMessage) {
+      uniqueMessageId = true;
+    } else {
+      message_id++;
+    }
+  }
 
   const newMessage = new Message({
     message_id,
