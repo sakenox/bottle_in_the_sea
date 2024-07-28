@@ -107,7 +107,7 @@ app.use((req, res, next) => {
 // Middleware to check referer
 function checkReferer(req, res, next) {
   const referer = req.get('referer');
-  if (referer && referer.startsWith('https://seanotes.se')) {
+  if (referer && referer.startsWith('https://localhost')) {
     next();
   } else {
     res.status(403).send('Forbidden');
@@ -287,11 +287,10 @@ app.get('/api/open-bottle', openBottleLimiter, checkReferer, async (req, res) =>
 app.post('/report', checkReferer, async (req, res) => {
   const { the_id } = req.body;
   const ip_created = req.ipAddress; // Get the IP address from the request
-
   if (!the_id) {
     return res.status(400).send('Message ID is required.');
   }
-  const actual = await Message.findOne({ the_id });
+  const actual = await Message.findOne({ unique_id:the_id });
   let message_id = actual.message_id;
   // Find the report document for the given message_id
   const report = await Report.findOne({ message_id });
