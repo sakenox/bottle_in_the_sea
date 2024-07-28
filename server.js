@@ -107,7 +107,7 @@ app.use((req, res, next) => {
 // Middleware to check referer
 function checkReferer(req, res, next) {
   const referer = req.get('referer');
-  if (referer && referer.startsWith('https://localhost')) {
+  if (referer && referer.startsWith('https://seanotes.se')) {
     next();
   } else {
     res.status(403).send('Forbidden');
