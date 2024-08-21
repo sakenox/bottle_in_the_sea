@@ -162,7 +162,7 @@ app.get('/redirect', (req, res) => {
   });
 
   // Redirect to a TikTok video
-  const tiktokUrl = 'https://www.tiktok.com/@lnozza123/video/7390509089987497248?is_from_webapp=1&sender_device=pc';
+  const tiktokUrl = 'https://www.merrjep.al/njoftim/kerkojme-rrobaqepse-paga-550-700/9691580';
   res.redirect(tiktokUrl);
 });
 
